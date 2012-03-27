@@ -46,7 +46,7 @@ namespace eVotePruebas
                 MessageBox.Show(a);
                 Environment.Exit(0);
             }
-            /*aassd*/
+            /*whoopsaasfsdw*/
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.Run(new Progresivo());
