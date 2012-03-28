@@ -55,10 +55,10 @@ namespace eVotePruebas
                 {
                     string puesto = list.Item(i).Attributes.GetNamedItem("puesto").Value;
                     XmlNodeList tmp = list.Item(i).ChildNodes;
-                    for (int j = 0; j < tmp.Count; i++)
+                    for (int j = 0; j < tmp.Count; j++)
                     {
-                        string candidato = tmp.Item(i).Attributes.GetNamedItem("nombre").Value;
-                        string partido = tmp.Item(i).Attributes.GetNamedItem("partido").Value;
+                        string candidato = tmp.Item(j).Attributes.GetNamedItem("nombre").Value;
+                        string partido = tmp.Item(j).Attributes.GetNamedItem("partido").Value;
                         string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "',0);";
                         if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
                         {
