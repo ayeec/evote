@@ -44,37 +44,44 @@ namespace eVotePruebas
 
         public Progresivo()
         {
-            config = new XmlDocument();
-            config.Load("config.xml");
-            list = config.GetElementsByTagName("voto");
-            string error = "";
-            for (int i = 0; i < list.Count; i++)
+            try
             {
-                string puesto=list.Item(i).Attributes.GetNamedItem("puesto").Value;
-                XmlNodeList tmp = list.Item(i).ChildNodes;
-                for (int j = 0; j < tmp.Count; i++)
+                config = new XmlDocument();
+
+                config.Load("config.xml");
+                list = config.GetElementsByTagName("voto");
+                string error = "";
+                for (int i = 0; i < list.Count; i++)
                 {
-                    string candidato = tmp.Item(i).Attributes.GetNamedItem("nombre").Value;
-                    string partido = tmp.Item(i).Attributes.GetNamedItem("partido").Value;
-                    string insert="insert into candidato values(null,'"+candidato+"','"+partido+"','"+puesto+"',0);";
-                    if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
+                    string puesto = list.Item(i).Attributes.GetNamedItem("puesto").Value;
+                    XmlNodeList tmp = list.Item(i).ChildNodes;
+                    for (int j = 0; j < tmp.Count; i++)
                     {
-                        MessageBox.Show(error);
+                        string candidato = tmp.Item(i).Attributes.GetNamedItem("nombre").Value;
+                        string partido = tmp.Item(i).Attributes.GetNamedItem("partido").Value;
+                        string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "',0);";
+                        if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
+                        {
+                            MessageBox.Show(error);
+                        }
                     }
                 }
+                InitializeComponent();
+
+                this.Width = Screen.PrimaryScreen.Bounds.Width;
+                this.Height = Screen.PrimaryScreen.Bounds.Height;
+
+
+                CheckForIllegalCrossThreadCalls = false;
+                //hilo = new Thread(new ThreadStart(bloqueo.esperarDesbloqueo));
+                hilo = new Thread(new ThreadStart(this.esperar));
+
+
             }
-            InitializeComponent();
-            
-            this.Width = Screen.PrimaryScreen.Bounds.Width;
-            this.Height = Screen.PrimaryScreen.Bounds.Height;
-
-
-            CheckForIllegalCrossThreadCalls = false;
-            //hilo = new Thread(new ThreadStart(bloqueo.esperarDesbloqueo));
-            hilo = new Thread(new ThreadStart(this.esperar));
-            
-            
-            
+            catch (Exception)
+            {
+                MessageBox.Show("Favor de colocar el archivo config.xml\nEn la misma carpeta que el ejecutable.", "Archivo no existente");
+            }
         }
 
         private void Progresivo_Load(object sender, EventArgs e)
