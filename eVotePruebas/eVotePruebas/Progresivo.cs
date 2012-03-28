@@ -47,7 +47,24 @@ namespace eVotePruebas
             config = new XmlDocument();
             config.Load("config.xml");
             list = config.GetElementsByTagName("voto");
+            string error = "";
+            for (int i = 0; i < list.Count; i++)
+            {
+                string puesto=list.Item(i).Attributes.GetNamedItem("puesto").Value;
+                XmlNodeList tmp = list.Item(i).ChildNodes;
+                for (int j = 0; j < tmp.Count; i++)
+                {
+                    string candidato = tmp.Item(i).Attributes.GetNamedItem("nombre").Value;
+                    string partido = tmp.Item(i).Attributes.GetNamedItem("partido").Value;
+                    string insert="insert into candidato values(null,'"+candidato+"','"+partido+"','"+puesto+"',0);";
+                    if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
+                    {
+                        MessageBox.Show(error);
+                    }
+                }
+            }
             InitializeComponent();
+            
             this.Width = Screen.PrimaryScreen.Bounds.Width;
             this.Height = Screen.PrimaryScreen.Bounds.Height;
 
@@ -266,20 +283,9 @@ namespace eVotePruebas
 
         void botonclick(object sender, EventArgs e)
         {
-            string select = "select * from candidato where nombre='" + candidato() + "';";
-            string insert = "insert into candidato values(null,'" + candidato() + "','" + partido() + "','" + lblTitulo[ctrPaneles].Name + "',1);";
             string update = "update candidato set votos=votos+1 where nombre='" + candidato() + "';";
             string error = "";
-
-            Sqlite3.Vdbe ppStmt = new Sqlite3.Vdbe();
-            Sqlite3.sqlite3_prepare_v2(Program.db, select, -1, ref ppStmt, 0);
-            Sqlite3.sqlite3_step(ppStmt);
-            int voto = Sqlite3.sqlite3_column_int(ppStmt, 2);
-            int err = voto > 0 ?
-                Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) :
-                Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error);
-
-            if (err != Sqlite3.SQLITE_OK)
+            if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
             {
                 MessageBox.Show(error);
             }
