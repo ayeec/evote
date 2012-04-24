@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
+//http://www.gutgames.com/post/AES-Encryption-in-C.aspx
+
 namespace encripto
 {
     class Program
