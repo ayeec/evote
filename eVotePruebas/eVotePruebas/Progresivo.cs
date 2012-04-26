@@ -12,6 +12,7 @@ using System.Threading;
 using System.Net.Sockets;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using Community.CsharpSqlite;
 
 namespace eVotePruebas
@@ -199,6 +200,7 @@ namespace eVotePruebas
                 rbtBotones[i][j].UseVisualStyleBackColor = true;
                 rbtBotones[i][j].Visible = true;
                 rbtBotones[i][j].Location = new Point(x, y);
+                rbtBotones[i][j].Checked = false;
                 rbtBotones[i][j].CheckedChanged += new EventHandler(Progresivo_CheckedChanged);
                 x+=271;
                 if (x > Screen.PrimaryScreen.Bounds.Width-271)
@@ -207,67 +209,6 @@ namespace eVotePruebas
                     y += 271;
                 }
             }
-
-            // 
-            //// radioButton4
-            //// 
-            //this.radioButton4.Appearance = System.Windows.Forms.Appearance.Button;
-            //this.radioButton4.AutoSize = true;
-            //this.radioButton4.Image = global::eVotePruebas.Properties.Resources.prd;
-            //this.radioButton4.Location = new System.Drawing.Point(289, 241);
-            //this.radioButton4.Name = "radioButton4";
-            //this.radioButton4.Size = new System.Drawing.Size(277, 206);
-            //this.radioButton4.TabIndex = 13;
-            //this.radioButton4.TabStop = true;
-            //this.radioButton4.Text = "radioButton1";
-            //this.radioButton4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.radioButton4.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            //this.radioButton4.UseVisualStyleBackColor = true;
-            //// 
-            //// radioButton2
-            //// 
-            //this.radioButton2.Appearance = System.Windows.Forms.Appearance.Button;
-            //this.radioButton2.AutoSize = true;
-            //this.radioButton2.Image = global::eVotePruebas.Properties.Resources.pan;
-            //this.radioButton2.Location = new System.Drawing.Point(289, 12);
-            //this.radioButton2.Name = "radioButton2";
-            //this.radioButton2.Size = new System.Drawing.Size(277, 206);
-            //this.radioButton2.TabIndex = 13;
-            //this.radioButton2.TabStop = true;
-            //this.radioButton2.Text = "radioButton1";
-            //this.radioButton2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.radioButton2.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            //this.radioButton2.UseVisualStyleBackColor = true;
-            //// 
-            //// radioButton3
-            //// 
-            //this.radioButton3.Appearance = System.Windows.Forms.Appearance.Button;
-            //this.radioButton3.AutoSize = true;
-            //this.radioButton3.Image = global::eVotePruebas.Properties.Resources.pt;
-            //this.radioButton3.Location = new System.Drawing.Point(6, 241);
-            //this.radioButton3.Name = "radioButton3";
-            //this.radioButton3.Size = new System.Drawing.Size(277, 206);
-            //this.radioButton3.TabIndex = 13;
-            //this.radioButton3.TabStop = true;
-            //this.radioButton3.Text = "radioButton1";
-            //this.radioButton3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.radioButton3.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            //this.radioButton3.UseVisualStyleBackColor = true;
-            //// 
-            //// radioButton1
-            //// 
-            //this.radioButton1.Appearance = System.Windows.Forms.Appearance.Button;
-            //this.radioButton1.AutoSize = true;
-            //this.radioButton1.Image = ((System.Drawing.Image)(resources.GetObject("radioButton1.Image")));
-            //this.radioButton1.Location = new System.Drawing.Point(6, 12);
-            //this.radioButton1.Name = "radioButton1";
-            //this.radioButton1.Size = new System.Drawing.Size(277, 206);
-            //this.radioButton1.TabIndex = 13;
-            //this.radioButton1.TabStop = true;
-            //this.radioButton1.Text = "radioButton1";
-            //this.radioButton1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            //this.radioButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            //this.radioButton1.UseVisualStyleBackColor = true;
 
             return subList.Count;
         }
@@ -308,6 +249,7 @@ namespace eVotePruebas
                     MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
                     //this.Close();
                     restaurar();
+                    //encriptar();
                 }
             }
             
@@ -319,7 +261,9 @@ namespace eVotePruebas
             {
                 //this.Close();
                 restaurar();
+                //encriptar();
             }
+            
             
         }
 
@@ -428,6 +372,34 @@ namespace eVotePruebas
                 }
             }
             return candidato;
+        }
+
+        private void encriptar()
+        {
+            Sqlite3.sqlite3_close(Program.db);
+            FileStream fs = new FileStream(Program.dbase, FileMode.Open, FileAccess.Read, FileShare.None);
+            byte[] datos = new byte[fs.Length];
+            fs.Read(datos, 0, Convert.ToInt32(fs.Length));
+            fs.Close();
+
+            RijndaelManaged crip = new RijndaelManaged();
+            crip.Mode = CipherMode.CBC;
+            PasswordDeriveBytes contra = new PasswordDeriveBytes(clave, Encoding.ASCII.GetBytes(clave + id),"SHA1",2);
+            byte[] llave = contra.GetBytes(256 / 8);
+            byte[] vi=Enumerable.Repeat<byte>(0,16).ToArray();
+            Array.Copy(Encoding.ASCII.GetBytes(id), vi, id.Length > 16 ? 16 : id.Length);
+            ICryptoTransform ict = crip.CreateEncryptor(llave,vi);
+            MemoryStream memstr = new MemoryStream();
+            CryptoStream crystr = new CryptoStream(memstr, ict, CryptoStreamMode.Write);
+            crystr.Write(datos, 0, datos.Length);
+            crystr.FlushFinalBlock();
+            byte[] encriptado = memstr.ToArray();
+            memstr.Close();
+            crystr.Close();
+            crip.Clear();
+
+            File.WriteAllBytes(Program.dbase, encriptado);
+
         }
     }
 }

@@ -13,12 +13,13 @@ namespace encripto
     {
         static void Main(string[] args)
         {
+
             RijndaelManaged man = new RijndaelManaged();
-            byte[] plain = {0x1};
+            byte[] plain = {1};
             man.Mode = CipherMode.CBC;
             PasswordDeriveBytes derive = new PasswordDeriveBytes("contra", new byte[] { 0x23, 0x25, 0x25 }, "SHA1", 2);
             byte[] llave = derive.GetBytes(256 / 8);
-            ICryptoTransform ict = man.CreateEncryptor(llave, Encoding.ASCII.GetBytes("OFRna73m*aze01xY"));
+            ICryptoTransform ict = man.CreateEncryptor(llave, Encoding.ASCII.GetBytes("0FRna73m*aze01xY"));
             MemoryStream mem = new MemoryStream();
             CryptoStream cryp = new CryptoStream(mem, ict, CryptoStreamMode.Write);
             cryp.Write(plain, 0, plain.Length);
