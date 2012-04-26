@@ -187,6 +187,7 @@ namespace eVotePruebas
             for (int j = 0; j < subList.Count; j++)
             {
                 rbtBotones[i][j] = new RadioButton();
+                rbtBotones[i][j].Checked = false;
                 rbtBotones[i][j].Appearance = Appearance.Button;
                 rbtBotones[i][j].AutoSize = true;
                 rbtBotones[i][j].Image = (Image)Properties.Resources.ResourceManager.GetObject(((XmlElement)subList[j]).GetAttribute("partido"));
@@ -200,7 +201,6 @@ namespace eVotePruebas
                 rbtBotones[i][j].UseVisualStyleBackColor = true;
                 rbtBotones[i][j].Visible = true;
                 rbtBotones[i][j].Location = new Point(x, y);
-                rbtBotones[i][j].Checked = false;
                 rbtBotones[i][j].CheckedChanged += new EventHandler(Progresivo_CheckedChanged);
                 x+=271;
                 if (x > Screen.PrimaryScreen.Bounds.Width-271)
@@ -248,8 +248,9 @@ namespace eVotePruebas
                 {
                     MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
                     //this.Close();
+                    encriptar();
                     restaurar();
-                    //encriptar();
+                    
                 }
             }
             
@@ -260,8 +261,9 @@ namespace eVotePruebas
             if (MessageBox.Show("¿Realmente desea anular todos los votos que no ha efectuado? Los votos realizados se registraran y los no efectuados se anularan", "Terminar las votaciones", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 //this.Close();
+                encriptar();
                 restaurar();
-                //encriptar();
+                
             }
             
             

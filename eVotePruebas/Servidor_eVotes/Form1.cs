@@ -57,7 +57,7 @@ namespace Servidor_eVotes
             int timer = 0;
             while (true)
             {
-                TcpListener listener = new TcpListener(IPAddress.Any, 51112);
+                TcpListener listener = new TcpListener(IPAddress.Any, 51113);
 
                 listener.Start();
 
