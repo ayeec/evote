@@ -148,6 +148,7 @@ namespace eVotePruebas
             this.Visible = true;
             hilo.Start();
             
+            
         }
 
         private int addCandidates(int i)
@@ -202,6 +203,7 @@ namespace eVotePruebas
                 rbtBotones[i][j].Visible = true;
                 rbtBotones[i][j].Location = new Point(x, y);
                 rbtBotones[i][j].CheckedChanged += new EventHandler(Progresivo_CheckedChanged);
+                
                 x+=271;
                 if (x > Screen.PrimaryScreen.Bounds.Width-271)
                 {
@@ -231,29 +233,37 @@ namespace eVotePruebas
 
         void botonclick(object sender, EventArgs e)
         {
-            string update = "update candidato set votos=votos+1 where nombre='" + candidato() + "';";
-            string error = "";
-            if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
+            var query = paneles[ctrPaneles].Controls.OfType<RadioButton>().FirstOrDefault(r => r.Checked);
+            
+            if (query != null || !String.IsNullOrEmpty(txtNoListado[ctrPaneles].Text))
             {
-                MessageBox.Show(error);
-            }
-
-            if (ctrPaneles < list.Count)
-            {
-                paneles[ctrPaneles].Visible = false;
-                ctrPaneles++;
-                if (ctrPaneles != list.Count)
-                    paneles[ctrPaneles].Visible = true;
-                else
+                string update = "update candidato set votos=votos+1 where nombre='" + candidato() + "';";
+                string error = "";
+                if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
                 {
-                    MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
-                    //this.Close();
-                    encriptar();
-                    restaurar();
-                    
+                    MessageBox.Show(error);
+                }
+
+                if (ctrPaneles < list.Count)
+                {
+                    paneles[ctrPaneles].Visible = false;
+                    ctrPaneles++;
+                    if (ctrPaneles != list.Count)
+                        paneles[ctrPaneles].Visible = true;
+                    else
+                    {
+                        MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
+                        //this.Close();
+                        encriptar();
+                        restaurar();
+
+                    }
                 }
             }
-            
+            else
+            {
+                MessageBox.Show("Seleccione un candidato o introduzca uno en la caja de texto", "Seleccione una opcion", MessageBoxButtons.OK);
+            }
 
         }
         void btnCancelar_Click(object sender, EventArgs e)
@@ -284,11 +294,12 @@ namespace eVotePruebas
                 }
 
             }
+            hilo = new Thread(new ThreadStart(this.esperar));
         }
         void esperar()
         {
             string mensaje="";
-             while (true)
+            while (true)
             {
                 TcpListener listener = new TcpListener(IPAddress.Any, 51111);
 
@@ -299,15 +310,15 @@ namespace eVotePruebas
                 {
 
                     string msg = new BinaryReader(n).ReadString();
-                    BinaryWriter w = new BinaryWriter(n);
+                    //BinaryWriter w = new BinaryWriter(n);
 
-                    w.Write(msg);
+                    //w.Write(msg);
                     string []arr=msg.Split(';');
                     if (arr[0].Equals(id) && arr[1].Equals(clave))
                     {
                         
                         mensaje= "Casilla " + n + " desbloqueada satisfactoriamente";
-                        w.Flush();
+                        //w.Flush();
                         bloqueo.Visible = false;
                         return;
                     }
@@ -318,12 +329,15 @@ namespace eVotePruebas
                             mensaje="Clave incorrecta para la casilla: " + n;
                         }
                     }
+                    listener.Stop();
+                    //w.Flush();
 
-                    w.Flush();
-
-                    enviarMensaje(mensaje);
-
+                    //enviarMensaje(mensaje);
+                    hilo.Abort();
+                    n.Close();
+                    //w.Close();
                 }
+                
 
                 //listener.Stop(  );
 
@@ -336,17 +350,19 @@ namespace eVotePruebas
         void enviarMensaje(string msg)
         {
             using (TcpClient client = new TcpClient("localhost", 51112))
-            using (NetworkStream ns = client.GetStream())
             {
+                using (NetworkStream ns = client.GetStream())
+                {
 
-                BinaryWriter bw = new BinaryWriter(ns);
+                    BinaryWriter bw = new BinaryWriter(ns);
 
-                bw.Write(msg);
+                    bw.Write(msg);
 
-                bw.Flush();
+                    bw.Flush();
 
-                MessageBox.Show( new BinaryReader(ns).ReadString());
+                    MessageBox.Show(new BinaryReader(ns).ReadString());
 
+                }
             }
         }
 

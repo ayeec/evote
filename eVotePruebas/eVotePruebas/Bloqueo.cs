@@ -42,7 +42,7 @@ namespace eVotePruebas
 
             
             
-            mensaje.Text = "La terminal esta bloqueada,\ndebe de ser debloqueada\npor los funcionarios de casilla";
+            mensaje.Text = "La terminal esta bloqueada,\ndebe de ser desbloqueada\npor los funcionarios de casilla";
             mensaje.AutoSize = true;
             mensaje.Location = new System.Drawing.Point(Screen.PrimaryScreen.Bounds.Width/2 ,Screen.PrimaryScreen.Bounds.Height/2);
             mensaje.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

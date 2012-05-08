@@ -21,7 +21,7 @@ namespace Servidor_eVotes
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
             hilo = hilo = new Thread(new ThreadStart(this.mensaje));
-            hilo.Start();
+            //hilo.Start();
         }
 
         private void txtCasilla_KeyPress(object sender, KeyPressEventArgs e)
@@ -90,6 +90,11 @@ namespace Servidor_eVotes
             }
 
             
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            txtCasilla.Focus();
         }
     }
 }
