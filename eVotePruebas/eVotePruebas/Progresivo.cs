@@ -32,6 +32,8 @@ namespace eVotePruebas
         private Button[] botones;
         private Button [] btnCancelar;
         private int ctrPaneles = 0;
+
+        private string[] updates;
         #endregion
         #region CANDIDATOS: Variables de los cadidatos
         private Label [] lblNoListado;
@@ -51,22 +53,8 @@ namespace eVotePruebas
 
                 config.Load("config.xml");
                 list = config.GetElementsByTagName("voto");
-                string error = "";
-                for (int i = 0; i < list.Count; i++)
-                {
-                    string puesto = list.Item(i).Attributes.GetNamedItem("puesto").Value;
-                    XmlNodeList tmp = list.Item(i).ChildNodes;
-                    for (int j = 0; j < tmp.Count; j++)
-                    {
-                        string candidato = tmp.Item(j).Attributes.GetNamedItem("nombre").Value;
-                        string partido = tmp.Item(j).Attributes.GetNamedItem("partido").Value;
-                        string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "',0);";
-                        if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
-                        {
-                            MessageBox.Show(error);
-                        }
-                    }
-                }
+
+                
                 InitializeComponent();
 
                 this.Width = Screen.PrimaryScreen.Bounds.Width;
@@ -76,7 +64,7 @@ namespace eVotePruebas
                 CheckForIllegalCrossThreadCalls = false;
                 //hilo = new Thread(new ThreadStart(bloqueo.esperarDesbloqueo));
                 hilo = new Thread(new ThreadStart(this.esperar));
-
+                updates = new string[list.Count];
 
             }
             catch (Exception)
@@ -84,6 +72,27 @@ namespace eVotePruebas
                 MessageBox.Show("Favor de colocar el archivo config.xml\nEn la misma carpeta que el ejecutable.", "Archivo no existente");
             }
         }
+
+        void saveOrCreateFile()
+        {
+            string error = "";
+            for (int i = 0; i < list.Count; i++)
+            {
+                string puesto = list.Item(i).Attributes.GetNamedItem("puesto").Value;
+                XmlNodeList tmp = list.Item(i).ChildNodes;
+                for (int j = 0; j < tmp.Count; j++)
+                {
+                    string candidato = tmp.Item(j).Attributes.GetNamedItem("nombre").Value;
+                    string partido = tmp.Item(j).Attributes.GetNamedItem("partido").Value;
+                    string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "',0);";
+                    if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
+                    {
+                        MessageBox.Show(error);
+                    }
+                }
+            }
+        }
+
 
         private void Progresivo_Load(object sender, EventArgs e)
         {
@@ -230,6 +239,18 @@ namespace eVotePruebas
                 (sender as RadioButton).Image = (Image)Properties.Resources.ResourceManager.GetObject((sender as RadioButton).Name);
             }
         }
+        void executeUpdates()
+        {
+            for (int x = 0; x < ctrPaneles; x++)
+            {
+                string update = "update candidato set votos=votos+1 where nombre='" + updates[x] + "';";
+                string error = "";
+                if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
+                {
+                    MessageBox.Show(error);
+                }
+            }
+        }
 
         void botonclick(object sender, EventArgs e)
         {
@@ -237,12 +258,7 @@ namespace eVotePruebas
             
             if (query != null || !String.IsNullOrEmpty(txtNoListado[ctrPaneles].Text))
             {
-                string update = "update candidato set votos=votos+1 where nombre='" + candidato() + "';";
-                string error = "";
-                if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
-                {
-                    MessageBox.Show(error);
-                }
+                updates[ctrPaneles] = candidato();
 
                 if (ctrPaneles < list.Count)
                 {
@@ -254,6 +270,8 @@ namespace eVotePruebas
                     {
                         MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
                         //this.Close();
+                        saveOrCreateFile();
+                        executeUpdates();
                         encriptar();
                         restaurar();
 
