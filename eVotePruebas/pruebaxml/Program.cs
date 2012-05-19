@@ -25,12 +25,8 @@ namespace pruebaxml
             Console.WriteLine(nav.MoveToFirstChild());
             Console.WriteLine(nav.MoveToFirstAttribute());
             Console.WriteLine(nav.Value);*/
-            for (int i = 0; i <= 4; i++)
-            {
-                Console.WriteLine(10 + ((i % 2 == 0) ? i*310 : i + 1 * 310));
-                Console.WriteLine((i % 2 == 0) ? 10 : 290);
-                Console.WriteLine("\n");
-            }
+            Console.WriteLine(BitConverter.ToInt32(new byte[] { 1, 0, 0, 0 }, 0));
+            Console.WriteLine(String.Join(",", BitConverter.GetBytes(1).Select(o => o.ToString()).ToArray()));
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Community.CsharpSqlite;
 
 namespace eVotePruebas
@@ -65,17 +66,20 @@ namespace eVotePruebas
                 //hilo = new Thread(new ThreadStart(bloqueo.esperarDesbloqueo));
                 hilo = new Thread(new ThreadStart(this.esperar));
                 updates = new string[list.Count];
+                
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                MessageBox.Show("Favor de colocar el archivo config.xml\nEn la misma carpeta que el ejecutable.", "Archivo no existente");
+                MessageBox.Show(e.Message,e.Message);
             }
         }
 
         void saveOrCreateFile()
         {
             string error = "";
+            SoapHexBinary soap = new SoapHexBinary(encriptarint(0));
+            string enc = soap.ToString();
             for (int i = 0; i < list.Count; i++)
             {
                 string puesto = list.Item(i).Attributes.GetNamedItem("puesto").Value;
@@ -84,7 +88,7 @@ namespace eVotePruebas
                 {
                     string candidato = tmp.Item(j).Attributes.GetNamedItem("nombre").Value;
                     string partido = tmp.Item(j).Attributes.GetNamedItem("partido").Value;
-                    string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "',0);";
+                    string insert = "insert into candidato values(null,'" + candidato + "','" + partido + "','" + puesto + "','" + enc +"');";
                     if (Sqlite3.sqlite3_exec(Program.db, insert, null, null, ref error) != Sqlite3.SQLITE_OK)
                     {
                         MessageBox.Show(error);
@@ -156,7 +160,7 @@ namespace eVotePruebas
             paneles[0].Visible = true;
             this.Visible = true;
             hilo.Start();
-            
+            saveOrCreateFile();
             
         }
 
@@ -243,7 +247,15 @@ namespace eVotePruebas
         {
             for (int x = 0; x < ctrPaneles; x++)
             {
-                string update = "update candidato set votos=votos+1 where nombre='" + updates[x] + "';";
+                string select = "select votos from candidato where nombre='" + updates[x] + "';";
+                Sqlite3.Vdbe pstmt = new Sqlite3.Vdbe();
+                Sqlite3.sqlite3_prepare_v2(Program.db, select, select.Length, ref pstmt, 0);
+                Sqlite3.sqlite3_step(pstmt);
+                string des=Sqlite3.sqlite3_column_text(pstmt, 0);
+                int voto = desencriptarint( SoapHexBinary.Parse(des).Value);
+                voto++;
+                string enc = new SoapHexBinary(encriptarint(voto)).ToString();
+                string update = "update candidato set votos='" + enc + "' where nombre='" + updates[x] + "';";
                 string error = "";
                 if (Sqlite3.sqlite3_exec(Program.db, update, null, null, ref error) != Sqlite3.SQLITE_OK)
                 {
@@ -270,7 +282,7 @@ namespace eVotePruebas
                     {
                         MessageBox.Show("Votación terminada, gracias por participar", "Votos correctamente efectados", MessageBoxButtons.OK);
                         //this.Close();
-                        saveOrCreateFile();
+                        //saveOrCreateFile();
                         executeUpdates();
                         encriptar();
                         restaurar();
@@ -413,7 +425,7 @@ namespace eVotePruebas
         private void encriptar()
         {
             Sqlite3.sqlite3_close(Program.db);
-            FileStream fs = new FileStream(Program.dbase, FileMode.Open, FileAccess.Read, FileShare.None);
+            FileStream fs = new FileStream(Program.dbase, FileMode.Open, FileAccess.Read);
             byte[] datos = new byte[fs.Length];
             fs.Read(datos, 0, Convert.ToInt32(fs.Length));
             fs.Close();
@@ -436,6 +448,46 @@ namespace eVotePruebas
 
             File.WriteAllBytes(Program.dbase, encriptado);
 
+        }
+
+        private byte[] encriptarint(int voto)
+        {
+            byte[] datos = BitConverter.GetBytes(voto);
+            RijndaelManaged crip = new RijndaelManaged();
+            crip.Mode = CipherMode.ECB;
+            PasswordDeriveBytes contra = new PasswordDeriveBytes(clave, Encoding.ASCII.GetBytes(clave + id), "SHA1", 2);
+            byte[] llave = contra.GetBytes(256 / 8);
+            byte[] vi = Enumerable.Repeat<byte>(0, 16).ToArray();
+            Array.Copy(Encoding.ASCII.GetBytes(id), vi, id.Length > 16 ? 16 : id.Length);
+            ICryptoTransform ict = crip.CreateEncryptor(llave, vi);
+            MemoryStream memstr = new MemoryStream();
+            CryptoStream crystr = new CryptoStream(memstr, ict, CryptoStreamMode.Write);
+            crystr.Write(datos, 0, datos.Length);
+            crystr.FlushFinalBlock();
+            byte[] encriptado = memstr.ToArray();
+            memstr.Close();
+            crystr.Close();
+            crip.Clear();
+
+            return encriptado;
+        }
+
+        private int desencriptarint(byte[] voto)
+        {
+            int votos=0;
+            RijndaelManaged crip = new RijndaelManaged();
+            crip.Mode = CipherMode.ECB;
+            PasswordDeriveBytes contra = new PasswordDeriveBytes(clave, Encoding.ASCII.GetBytes(clave + id), "SHA1", 2);
+            byte[] llave = contra.GetBytes(256 / 8);
+            byte[] vi = Enumerable.Repeat<byte>(0, 16).ToArray();
+            Array.Copy(Encoding.ASCII.GetBytes(id), vi, id.Length > 16 ? 16 : id.Length);
+            ICryptoTransform ict = crip.CreateDecryptor(llave, vi);
+            MemoryStream memstr = new MemoryStream(voto);
+            CryptoStream crystr = new CryptoStream(memstr, ict, CryptoStreamMode.Read);
+            byte[] des = new byte[voto.Length];
+            crystr.Read(des, 0, des.Length);
+            votos = BitConverter.ToInt32(des, 0);
+            return votos;
         }
     }
 }
