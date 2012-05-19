@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace eVotePruebas.Properties {
+namespace XPath.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace eVotePruebas.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("eVotePruebas.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("XPath.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -60,63 +60,22 @@ namespace eVotePruebas.Properties {
             }
         }
         
-        internal static System.Drawing.Bitmap palomita {
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;config&gt;
+        ///&lt;/config&gt;.
+        /// </summary>
+        internal static string config {
             get {
-                object obj = ResourceManager.GetObject("palomita", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap pan {
-            get {
-                object obj = ResourceManager.GetObject("pan", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap prd {
-            get {
-                object obj = ResourceManager.GetObject("prd", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap pri {
-            get {
-                object obj = ResourceManager.GetObject("pri", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        internal static System.Drawing.Bitmap pt {
-            get {
-                object obj = ResourceManager.GetObject("pt", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ResourceManager.GetString("config", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to create table candidato(idcand integer primary key autoincrement,nombre text,partido text,puesto text,votos text);.
+        ///   Looks up a localized string similar to config.xml.
         /// </summary>
-        internal static string tablacan {
+        internal static string nombre {
             get {
-                return ResourceManager.GetString("tablacan", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to create table partidos(idpart integer primary key autoincrement,nombre text,siglas text);.
-        /// </summary>
-        internal static string tablapr {
-            get {
-                return ResourceManager.GetString("tablapr", resourceCulture);
-            }
-        }
-        
-        internal static System.Drawing.Bitmap tacha {
-            get {
-                object obj = ResourceManager.GetObject("tacha", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                return ResourceManager.GetString("nombre", resourceCulture);
             }
         }
     }

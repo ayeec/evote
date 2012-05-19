@@ -46,7 +46,7 @@ namespace Servidor_eVotes
 
                     w.Flush();
 
-                    MessageBox.Show(new BinaryReader(n).ReadString());
+                    //MessageBox.Show(new BinaryReader(n).ReadString());
 
                 }
             }
