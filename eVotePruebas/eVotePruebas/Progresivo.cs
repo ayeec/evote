@@ -148,12 +148,15 @@ namespace eVotePruebas
                 paneles[i].Controls.Add(botones[i]);
                 paneles[i].Controls.Add(lblNoListado[i]);
                 paneles[i].Controls.Add(txtNoListado[i]);
-                
-                
 
-                for(int a=0;a<x; a++)
+
+
+                for (int a = 0; a < x; a++)
+                {
                     paneles[i].Controls.Add(rbtBotones[i][a]);
+                    rbtBotones[i][a].Checked=false;
 
+                }
                 this.Controls.Add(paneles[i]);
 
             }
@@ -161,6 +164,13 @@ namespace eVotePruebas
             this.Visible = true;
             hilo.Start();
             saveOrCreateFile();
+            for (int i = 0; i < rbtBotones.Length; i++)
+            {
+                for (int j = 0; i < rbtBotones[i].Length; j++)
+                {
+                    rbtBotones[i][j].Checked = false;
+                }
+            }
             
         }
 
@@ -247,6 +257,7 @@ namespace eVotePruebas
         {
             for (int x = 0; x < ctrPaneles; x++)
             {
+                if(!String.IsNullOrEmpty(updates[x])){
                 string select = "select votos from candidato where nombre='" + updates[x] + "';";
                 Sqlite3.Vdbe pstmt = new Sqlite3.Vdbe();
                 Sqlite3.sqlite3_prepare_v2(Program.db, select, select.Length, ref pstmt, 0);
@@ -261,15 +272,20 @@ namespace eVotePruebas
                 {
                     MessageBox.Show(error);
                 }
+                }
             }
         }
 
         void botonclick(object sender, EventArgs e)
         {
-            var query = paneles[ctrPaneles].Controls.OfType<RadioButton>().FirstOrDefault(r => r.Checked);
-            
-            if (query != null || !String.IsNullOrEmpty(txtNoListado[ctrPaneles].Text))
-            {
+
+                if (!String.IsNullOrEmpty(txtNoListado[ctrPaneles].Text))
+                {
+                    string insert = "insert into candidato values('" + txtNoListado[ctrPaneles].Text + "',null,'" 
+                        + partido() + "','" + new SoapHexBinary(encriptarint(1)).ToString() + "');";
+                    string error = "";
+                    Sqlite3.sqlite3_exec(Program.db, insert, null, null,ref error);
+                }
                 updates[ctrPaneles] = candidato();
 
                 if (ctrPaneles < list.Count)
@@ -289,11 +305,6 @@ namespace eVotePruebas
 
                     }
                 }
-            }
-            else
-            {
-                MessageBox.Show("Seleccione un candidato o introduzca uno en la caja de texto", "Seleccione una opcion", MessageBoxButtons.OK);
-            }
 
         }
         void btnCancelar_Click(object sender, EventArgs e)
@@ -426,7 +437,7 @@ namespace eVotePruebas
         private void encriptar()
         {
             Sqlite3.sqlite3_close(Program.db);
-            FileStream fs = new FileStream(Program.dbase, FileMode.Open, FileAccess.Read);
+            FileStream fs = new FileStream(Program.dbase, FileMode.Open,FileAccess.Read,FileShare.None);
             byte[] datos = new byte[fs.Length];
             fs.Read(datos, 0, Convert.ToInt32(fs.Length));
             fs.Close();
