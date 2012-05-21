@@ -20,7 +20,7 @@ namespace Servidor_eVotes
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
-            hilo = hilo = new Thread(new ThreadStart(this.mensaje));
+            hilo = new Thread(new ThreadStart(this.mensaje));
             //hilo.Start();
         }
 

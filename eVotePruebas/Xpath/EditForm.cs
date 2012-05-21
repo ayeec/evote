@@ -12,10 +12,7 @@ namespace XPath
 	/// Summary description for EditForm.
 	/// </summary>
 	public class EditForm : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.Label label3;
+    {
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Button button2;
@@ -63,9 +60,6 @@ namespace XPath
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
             this.artist = new System.Windows.Forms.TextBox();
             this.price = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -75,30 +69,6 @@ namespace XPath
             this.button3 = new System.Windows.Forms.Button();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
-            // 
-            // label1
-            // 
-            this.label1.Location = new System.Drawing.Point(16, 32);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 16);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Title:";
-            // 
-            // label2
-            // 
-            this.label2.Location = new System.Drawing.Point(16, 64);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(64, 16);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Artist:";
-            // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(16, 104);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 16);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Price:";
             // 
             // artist
             // 
@@ -176,9 +146,6 @@ namespace XPath
             this.Controls.Add(this.label4);
             this.Controls.Add(this.price);
             this.Controls.Add(this.artist);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
             this.Name = "EditForm";
             this.Text = "EditXml";
             this.Load += new System.EventHandler(this.EditForm_Load);
@@ -328,7 +295,7 @@ namespace XPath
 				//Select the cd node with the matching title
 				XmlNode cd;
 				XmlElement root = doc.DocumentElement;
-				cd = root.SelectSingleNode("/config/voto[@puesto='" + this.country.Text + "']");
+				cd = root.SelectSingleNode("/config/voto[@puesto='" + this.country.Text.ToLower() + "']");
 
 				root.RemoveChild(cd);
 				//save the output to a file 

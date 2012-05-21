@@ -329,11 +329,12 @@ namespace eVotePruebas
         void esperar()
         {
             string mensaje="";
+            TcpListener listener = new TcpListener(IPAddress.Any, 51111);
+
+            listener.Start();
+
             while (true)
             {
-                TcpListener listener = new TcpListener(IPAddress.Any, 51111);
-
-                listener.Start();
 
                 using (TcpClient c = listener.AcceptTcpClient())
                 using (NetworkStream n = c.GetStream())
