@@ -272,6 +272,8 @@ namespace eVotePruebas
                 {
                     MessageBox.Show(error);
                 }
+                Sqlite3.sqlite3_finalize(pstmt);
+                    
                 }
             }
         }
@@ -281,7 +283,7 @@ namespace eVotePruebas
 
                 if (!String.IsNullOrEmpty(txtNoListado[ctrPaneles].Text))
                 {
-                    string insert = "insert into candidato values('" + txtNoListado[ctrPaneles].Text + "',null,'" 
+                    string insert = "insert into candidato values(null,'" + txtNoListado[ctrPaneles].Text + "',null,'" 
                         + partido() + "','" + new SoapHexBinary(encriptarint(1)).ToString() + "');";
                     string error = "";
                     Sqlite3.sqlite3_exec(Program.db, insert, null, null,ref error);
@@ -430,6 +432,10 @@ namespace eVotePruebas
                 {
                     candidato = r.Name;
                 }
+                else
+                {
+                    candidato = paneles[ctrPaneles].Name;
+                }
             }
             return candidato;
         }
@@ -437,7 +443,7 @@ namespace eVotePruebas
         private void encriptar()
         {
             Sqlite3.sqlite3_close(Program.db);
-            FileStream fs = new FileStream(Program.dbase, FileMode.Open,FileAccess.Read,FileShare.None);
+            FileStream fs = new FileStream(@"F:\prog\VC++\eVotePruebas\eVotePruebas\eVotePruebas\bin\Debug\votos.db", FileMode.Open, FileAccess.Read);
             byte[] datos = new byte[fs.Length];
             fs.Read(datos, 0, Convert.ToInt32(fs.Length));
             fs.Close();
